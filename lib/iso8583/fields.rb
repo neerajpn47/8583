@@ -1,44 +1,22 @@
-#--
-# Copyright 2009 by Tim Becker (tim.becker@kuriostaet.de)
-# MIT License, for details, see the LICENSE file accompaning
-# this distribution
-#++
-
 module ISO8583
 
   # This file contains a number of preinstantiated Field definitions. You
   # will probably need to create own fields in your implementation, please
   # see Field and Codec for further discussion on how to do this.
   # The fields currently available are those necessary to implement the 
-  # Berlin Groups Authorization Spec.
+  # spec of banks.
   #
-  # The following fields are available:
+  # The following field types are available:
   #
-  # [+LL+]           special form to de/encode variable length indicators, two bytes ASCII numerals
-  # [+LLL+]          special form to de/encode variable length indicators, two bytes ASCII numerals
-  # [+LL_BCD+]       special form to de/encode variable length indicators, two BCD digits
-  # [+LLVAR_N+]      two byte variable length ASCII numeral, payload ASCII numerals
-  # [+LLLVAR_N+]     three byte variable length ASCII numeral, payload ASCII numerals
-  # [+LLVAR_Z+]      two byte variable length ASCII numeral, payload Track2 data 
-  # [+LLVAR_AN+]    two byte variable length ASCII numeral, payload ASCII
-  # [+LLVAR_ANS+]    two byte variable length ASCII numeral, payload ASCII+special
-  # [+LLLVAR_AN+]   three byte variable length ASCII numeral, payload ASCII
-  # [+LLLVAR_ANS+]   three byte variable length ASCII numeral, payload ASCII+special
-  # [+LLVAR_B+]      Two byte variable length binary payload
-  # [+LLLVAR_B+]     Three byte variable length binary payload
-  # [+A+]            fixed length letters, represented in ASCII
-  # [+N+]            fixed lengh numerals, repesented in ASCII, padding right justified using zeros
-  # [+AN+]          fixed lengh ASCII [A-Za-z0-9], padding left justified using spaces.
-  # [+ANP+]          fixed lengh ASCII [A-Za-z0-9] and space, padding left, spaces
-  # [+ANS+]          fixed length ASCII  [\x20-\x7E], padding left, spaces
-  # [+B+]            binary data, padding left using nulls (0x00)
-  # [+MMDDhhmmss+]   Date, formatted as described in ASCII numerals
-  # [+YYMMDDhhmmss+] Date, formatted as named in ASCII numerals
-  # [+YYMM+]         Expiration Date, formatted as named in ASCII numerals
-  # [+Hhmmss+]       Date, formatted in ASCII hhmmss
+  # [LLVAR_N]      two byte variable length ASCII numeral, payload ASCII numerals
+  # [LLVAR_ANS]    two byte variable length ASCII numeral, payload ASCII
+  # [ANS]            fixed length letters, represented in ASCII
+  # [N]            fixed lengh numerals, repesented in ASCII, padding right justified using zeros
+  # [B]            binary data, padding left using nulls (0x00)
+  # [YYYYMMDDHH]   Date, formatted as described in ASCII numerals
+  # [YYYYMMDDHH24MISS] Date, formatted as named in ASCII numerals
 
-
-  # Special form to de/encode variable length indicators, two bytes ASCII numerals 
+  # Special form to de/encode variable length indicators, two bytes ASCII numerals
   LL         = Field.new
   LL.name    = "LL"
   LL.length  = 2
@@ -46,6 +24,7 @@ module ISO8583
   LL.padding = lambda {|value|
     sprintf("%02d", value)
   }
+
   # Special form to de/encode variable length indicators, three bytes ASCII numerals
   LLL         = Field.new
   LLL.name    = "LLL"
@@ -55,56 +34,22 @@ module ISO8583
     sprintf("%03d", value)
   }
 
-  LL_BCD        = BCDField.new
-  LL_BCD.length = 2
-  LL_BCD.codec  = Packed_Number
-
   # Two byte variable length ASCII numeral, payload ASCII numerals
   LLVAR_N        = Field.new
   LLVAR_N.length = LL
   LLVAR_N.codec  = ASCII_Number
 
-  # Three byte variable length ASCII numeral, payload ASCII numerals
-  LLLVAR_N        = Field.new
-  LLLVAR_N.length = LLL
-  LLLVAR_N.codec  = ASCII_Number
-
-  # Two byte variable length ASCII numeral, payload Track2 data
-  LLVAR_Z         = Field.new
-  LLVAR_Z.length  = LL
-  LLVAR_Z.codec   = Track2
-
-  # Two byte variable length ASCII numeral, payload ASCII, fixed length, zeropadded (right)
-  LLVAR_AN        = Field.new
-  LLVAR_AN.length = LL
-  LLVAR_AN.codec  = AN_Codec
-
-  # Two byte variable length ASCII numeral, payload ASCII+special
-  LLVAR_ANS        = Field.new
+  # Two byte variable length alpha-numeric with special characters.
+  LLVAR_ANS      = Field.new
   LLVAR_ANS.length = LL
-  LLVAR_ANS.codec  = ANS_Codec
-
-  # Three byte variable length ASCII numeral, payload ASCII, fixed length, zeropadded (right)
-  LLLVAR_AN        = Field.new
-  LLLVAR_AN.length = LLL
-  LLLVAR_AN.codec  = AN_Codec
+  LLVAR_ANS.codec = ANS_Codec
 
   # Three byte variable length ASCII numeral, payload ASCII+special
   LLLVAR_ANS        = Field.new
   LLLVAR_ANS.length = LLL
   LLLVAR_ANS.codec  = ANS_Codec
 
-  # Two byte variable length binary payload
-  LLVAR_B        = Field.new
-  LLVAR_B.length = LL
-  LLVAR_B.codec  = Null_Codec
-
-
-  # Three byte variable length binary payload
-  LLLVAR_B        = Field.new
-  LLLVAR_B.length = LLL
-  LLLVAR_B.codec  = Null_Codec
-
+  # Two byte variable length ASCII letters
   # Fixed lengh numerals, repesented in ASCII, padding right justified using zeros
   N = Field.new
   N.codec = ASCII_Number
@@ -112,28 +57,11 @@ module ISO8583
     sprintf("%0#{len}d", val)
   }
 
-  N_BCD = BCDField.new
-  N_BCD.codec = Packed_Number
-
   PADDING_LEFT_JUSTIFIED_SPACES = lambda {|val, len|
     sprintf "%-#{len}s", val
   }
 
   # Fixed length ASCII letters [A-Za-z]
-  A = Field.new
-  A.codec = A_Codec
-
-  # Fixed lengh ASCII [A-Za-z0-9], padding left justified using spaces.
-  AN = Field.new
-  AN.codec = AN_Codec
-  AN.padding = PADDING_LEFT_JUSTIFIED_SPACES
-
-  # Fixed lengh ASCII [A-Za-z0-9] and space, padding left, spaces
-  ANP = Field.new
-  ANP.codec = ANP_Codec
-  ANP.padding = PADDING_LEFT_JUSTIFIED_SPACES
-
-  # Fixed length ASCII  [\x20-\x7E], padding left, spaces
   ANS = Field.new
   ANS.codec = ANS_Codec
   ANS.padding = PADDING_LEFT_JUSTIFIED_SPACES
@@ -148,23 +76,14 @@ module ISO8583
     val
   }
 
-  # Date, formatted as described in ASCII numerals
-  MMDDhhmmss        = Field.new
-  MMDDhhmmss.codec  = MMDDhhmmssCodec
-  MMDDhhmmss.length = 10
+  # Date, formatted as described in Bankaway
+  YYYYMMDDHH        = Field.new
+  YYYYMMDDHH.codec  = YYYYMMDDHHcodec
+  YYYYMMDDHH.length = 8
 
-  #Date, formatted as described in ASCII numerals
-  YYMMDDhhmmss        = Field.new
-  YYMMDDhhmmss.codec  = YYMMDDhhmmssCodec
-  YYMMDDhhmmss.length = 12
-
-  #Date, formatted as described in ASCII numerals
-  YYMM        = Field.new
-  YYMM.codec  = YYMMCodec
-  YYMM.length = 4
-  
-  Hhmmss        = Field.new
-  Hhmmss.codec  = HhmmssCodec
-  Hhmmss.length = 6
+  #Date, formatted as described in Bankaway
+  YYYYMMDDHH24MISS        = Field.new
+  YYYYMMDDHH24MISS.codec  = YYYYMMDDHH24MISScodec
+  YYYYMMDDHH24MISS.length = 14
 
 end

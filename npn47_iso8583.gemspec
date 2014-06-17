@@ -5,21 +5,21 @@ $:.unshift lib unless $:.include?(lib)
 require "iso8583/version"
  
 Gem::Specification.new do |s|
-  s.name        = "iso8583"
+  s.name        = "npn47_iso8583"
   s.version     = ISO8583::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Tim Becker", "Slava Kravchenko"]
-  s.email       = ["tim.becker@kuriositaet.de","cordawyn@gmail.com"]
-  s.homepage    = "http://github.com/a2800276/8583/"
+  s.authors     = ["Tim Becker", "Slava Kravchenko", "Neeraj PN"]
+  s.email       = ["tim.becker@kuriositaet.de","cordawyn@gmail.com", "neerajpn47@gmail.com"]
+  s.homepage    = "http://github.com/neerajpn47/8583/"
   s.summary     = "Ruby implementation of ISO 8583 financial messaging"
   s.description = "Ruby implementation of ISO 8583 financial messaging"
  
   s.required_rubygems_version = ">= 1.3.6"
-  s.rubyforge_project         = "iso8583"
+  s.rubyforge_project         = "npn47_iso8583"
   s.has_rdoc                  = true
   
   s.requirements << "none"
   
-  s.files        = Dir.glob("{lib,test}/**/*") + %w(AUTHORS CHANGELOG LICENSE README TODO)
+  s.files        = Dir.glob("{lib,test}/**/*")
   s.require_path = 'lib'
 end
